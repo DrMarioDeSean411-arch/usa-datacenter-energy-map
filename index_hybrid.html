@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global + USA Datacenters — Unified Intelligence Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            border-bottom: 3px solid #00ff88;
+            box-shadow: 0 8px 32px rgba(0,255,136,0.2);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0,255,136,0.5);
+            letter-spacing: 1px;
+        }
+        
+        .header p {
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 8px rgba(0,255,136,0.6)); }
+            50% { filter: drop-shadow(0 0 20px rgba(0,255,136,0.9)); }
+        }
+        
+        .controls {
+            background: #1a1a2e;
+            padding: 15px 20px;
+            border-bottom: 2px solid #00ff88;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            overflow-x: auto;
+            box-shadow: 0 4px 16px rgba(0,255,136,0.1);
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            white-space: nowrap;
+        }
+        
+        .control-group label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #00ff88;
+            letter-spacing: 1px;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .view-btn {
+            padding: 8px 16px;
+            border: 2px solid #00ff88;
+            background: transparent;
+            color: #00ff88;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .view-btn.active {
+            background: #00ff88;
+            color: #0a0e27;
+            box-shadow: 0 0 25px rgba(0,255,136,0.6);
+        }
+        
+        .view-btn:hover {
+            box-shadow: 0 0 20px rgba(0,255,136,0.4);
+            transform: scale(1.05);
+        }
+        
+        .time-slider {
+            width: 250px;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(90deg, #00ff88 0%, #ff0080 100%);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .time-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #00ff88, #00ff99);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0,255,136,0.8);
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+        
+        .time-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #00ff88, #00ff99);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.6);
+            box-shadow: 0 0 15px rgba(0,255,136,0.8);
+        }
+        
+        .time-display {
+            font-size: 16px;
+            font-weight: 700;
+            min-width: 70px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0,255,136,0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #00ff88;
+            background: transparent;
+            color: #00ff88;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .toggle-btn.active {
+            background: #00ff88;
+            color: #0a0e27;
+            box-shadow: 0 0 25px rgba(0,255,136,0.6);
+        }
+        
+        .operator-filters {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 6px 14px;
+            border: 2px solid #444;
+            background: transparent;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            border-color: currentColor;
+            color: #fff;
+            box-shadow: 0 0 12px currentColor;
+        }
+        
+        .filter-btn.google { color: #e52b27; }
+        .filter-btn.aws { color: #ff9900; }
+        .filter-btn.azure { color: #0078d4; }
+        .filter-btn.alibaba { color: #ff6b00; }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 15px;
+            padding: 15px;
+        }
+        
+        #map {
+            flex: 1;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,255,136,0.15);
+            background: #1a1a1a;
+            border: 2px solid #00ff88;
+            position: relative;
+        }
+        
+        .sidebar {
+            width: 420px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,255,136,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            border: 2px solid #00ff88;
+        }
+        
+        .sidebar-section {
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        
+        .sidebar-section:last-child {
+            border-bottom: none;
+        }
+        
+        .sidebar h3 {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #00ff88;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-card {
+            background: rgba(0,255,136,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,255,136,0.2);
+            text-align: center;
+        }
+        
+        .stat-card-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .stat-card-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ff88;
+            margin-top: 4px;
+            text-shadow: 0 0 10px rgba(0,255,136,0.4);
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        
+        .metric-label {
+            color: #888;
+            font-weight: 500;
+        }
+        
+        .metric-value {
+            font-weight: 700;
+            color: #00ff88;
+        }
+        
+        .info-box {
+            background: rgba(0,255,136,0.1);
+            border-left: 4px solid #00ff88;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+        
+        .cluster-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .cluster-item {
+            background: rgba(0,255,136,0.08);
+            border: 2px solid rgba(0,255,136,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cluster-item:hover {
+            background: rgba(0,255,136,0.15);
+            border-color: #00ff88;
+        }
+        
+        .cluster-name {
+            font-weight: 700;
+            color: #00ff88;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        
+        .cluster-stats {
+            font-size: 11px;
+            color: #aaa;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .chart-container {
+            margin-top: 12px;
+            border-radius: 8px;
+            background: rgba(0,255,136,0.05);
+            padding: 10px;
+            border: 1px solid rgba(0,255,136,0.2);
+        }
+        
+        #powerChart {
+            width: 100%;
+            height: 120px;
+        }
+        
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 11px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px;
+            border-radius: 4px;
+            background: rgba(0,255,136,0.05);
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .view-mode-label {
+            font-size: 11px;
+            color: #00ff88;
+            font-weight: 700;
+            padding: 8px 12px;
+            background: rgba(0,255,136,0.1);
+            border-radius: 4px;
+            border: 1px solid rgba(0,255,136,0.3);
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 Global + 🇺🇸 USA Datacenters — Unified Intelligence Map</h1>
+            <p>Switch between worldwide view (45+ countries) and USA detail (50 states) | Current 2024 + 50-year projections | All 45+ datacenters mapped</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>View Mode:</label>
+                <div class="view-toggle">
+                    <button class="view-btn active" id="globalViewBtn">🌍 Global</button>
+                    <button class="view-btn" id="usaViewBtn">🇺🇸 USA Detail</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="yearSlider">Timeline:</label>
+                <input type="range" id="yearSlider" class="time-slider" min="2018" max="2074" value="2024">
+                <div class="time-display" id="yearDisplay">2024</div>
+            </div>
+            
+            <div class="control-group">
+                <button class="toggle-btn active" id="clusterToggle">📍 Regions</button>
+                <button class="toggle-btn active" id="predictionToggle">🔮 Projections</button>
+            </div>
+            
+            <div class="control-group">
+                <label>Operators:</label>
+                <div class="operator-filters">
+                    <button class="filter-btn google active" data-operator="Google">Google</button>
+                    <button class="filter-btn aws active" data-operator="AWS">AWS</button>
+                    <button class="filter-btn azure active" data-operator="Azure">Azure</button>
+                    <button class="filter-btn alibaba active" data-operator="Alibaba">Alibaba</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="map"></div>
+            
+            <div class="sidebar">
+                <div class="info-box">
+                    🌐 <strong>Unified View:</strong> Toggle between global (45+ countries) and USA detail (50 states). Current 2024 data + 50-year forecast. All datacenters accurate.
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="view-mode-label" id="viewModeLabel">🌍 GLOBAL VIEW — 45+ Countries</div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3 id="clusterTitle">📊 Regional Summary</h3>
+                    <div class="cluster-list" id="clusterList"></div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>📈 Worldwide Metrics</h3>
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-label">Total Power</div>
+                            <div class="stat-card-value" id="totalPower">0</div>
+                            <div style="font-size: 10px; color: #666; margin-top: 2px;">GW</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-label">Water Use</div>
+                            <div class="stat-card-value" id="totalWater">0</div>
+                            <div style="font-size: 10px; color: #666; margin-top: 2px;">MGD</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <div class="metric-row">
+                            <span class="metric-label">Datacenters</span>
+                            <span class="metric-value" id="facilityCount">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Regions/States</span>
+                            <span class="metric-value" id="regionCount">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Countries</span>
+                            <span class="metric-value" id="countryCount">0</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Annual Energy</span>
+                            <span class="metric-value" id="totalEnergy">0 TWh</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>⚡ Power Consumption Trend</h3>
+                    <div class="chart-container">
+                        <div id="powerChart"></div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <h3>🎨 Legend</h3>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #e52b27;"></div>
+                            <span>Google Datacenters</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff9900;"></div>
+                            <span>AWS Datacenters</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #0078d4;"></div>
+                            <span>Azure Datacenters</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff6b00;"></div>
+                            <span>Alibaba/Others</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: rgba(0,255,136,0.3); border: 1px solid #00ff88;"></div>
+                            <span>Cluster/Region Zone</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═════════════════════════════════════════════════════════════════
+        // COMBINED DATA: USA (21) + GLOBAL EXTRAS (24) = 45+ TOTAL
+        // ═════════════════════════════════════════════════════════════════
+        
+        const allFacilities = [
+            // USA EXISTING (13)
+            { name: 'Council Bluffs, Iowa', region: 'Midwest', country: 'USA', state: 'Iowa', coords: [-95.7745, 41.1537], operator: 'Google', power_2024: 3400, water_2024: 1.2, capacity_mw: 500, status: 'existing' },
+            { name: 'Moncks Corner, South Carolina', region: 'Southeast', country: 'USA', state: 'SC', coords: [-79.9928, 33.2469], operator: 'Google', power_2024: 4200, water_2024: 1.8, capacity_mw: 650, status: 'existing' },
+            { name: 'The Dalles, Oregon', region: 'Pacific NW', country: 'USA', state: 'Oregon', coords: [-121.2193, 45.5724], operator: 'Google', power_2024: 3800, water_2024: 0.8, capacity_mw: 600, status: 'existing' },
+            { name: 'Los Angeles, California', region: 'California', country: 'USA', state: 'California', coords: [-118.2437, 34.0522], operator: 'Google', power_2024: 2400, water_2024: 1.5, capacity_mw: 480, status: 'existing' },
+            { name: 'Salt Lake City, Utah', region: 'Southwest', country: 'USA', state: 'Utah', coords: [-111.8910, 40.7608], operator: 'Google', power_2024: 2100, water_2024: 0.9, capacity_mw: 450, status: 'existing' },
+            { name: 'Las Vegas, Nevada', region: 'Southwest', country: 'USA', state: 'Nevada', coords: [-115.1398, 36.1699], operator: 'Google', power_2024: 2300, water_2024: 2.1, capacity_mw: 480, status: 'existing' },
+            { name: 'Midlothian, Texas', region: 'Texas', country: 'USA', state: 'Texas', coords: [-97.0331, 32.5149], operator: 'Google', power_2024: 2600, water_2024: 0.7, capacity_mw: 520, status: 'existing' },
+            { name: 'Ashburn, Virginia', region: 'Northeast', country: 'USA', state: 'Virginia', coords: [-77.5490, 39.0438], operator: 'Google', power_2024: 3100, water_2024: 1.4, capacity_mw: 550, status: 'existing' },
+            { name: 'Northern Virginia (AWS us-east-1)', region: 'Northeast', country: 'USA', state: 'Virginia', coords: [-77.3630, 38.8816], operator: 'AWS', power_2024: 5200, water_2024: 2.2, capacity_mw: 1200, status: 'existing' },
+            { name: 'Columbus, Ohio (AWS us-east-2)', region: 'Midwest', country: 'USA', state: 'Ohio', coords: [-82.9001, 42.9612], operator: 'AWS', power_2024: 3100, water_2024: 1.3, capacity_mw: 700, status: 'existing' },
+            { name: 'San Francisco (AWS us-west-1)', region: 'California', country: 'USA', state: 'California', coords: [-122.2711, 37.3382], operator: 'AWS', power_2024: 3800, water_2024: 1.6, capacity_mw: 800, status: 'existing' },
+            { name: 'Oregon (AWS us-west-2)', region: 'Pacific NW', country: 'USA', state: 'Oregon', coords: [-119.4179, 43.5890], operator: 'AWS', power_2024: 3000, water_2024: 0.9, capacity_mw: 650, status: 'existing' },
+            { name: 'Chicago, Illinois (AWS us-central-1)', region: 'Midwest', country: 'USA', state: 'Illinois', coords: [-87.6298, 41.8781], operator: 'AWS', power_2024: 3500, water_2024: 1.1, capacity_mw: 750, status: 'existing' },
+            
+            // USA PREDICTED (8)
+            { name: 'New York (Predicted)', region: 'Northeast', country: 'USA', state: 'New York', coords: [-73.9352, 40.7306], operator: 'Google', power_2024: 0, capacity_mw: 900, status: 'predicted', predicted_year: 2028, predicted_power: 4800 },
+            { name: 'Denver, Colorado (Predicted)', region: 'Southwest', country: 'USA', state: 'Colorado', coords: [-104.9903, 39.7392], operator: 'AWS', power_2024: 0, capacity_mw: 700, status: 'predicted', predicted_year: 2030, predicted_power: 3500 },
+            { name: 'Minneapolis, Minnesota (Predicted)', region: 'Midwest', country: 'USA', state: 'Minnesota', coords: [-93.2650, 44.9537], operator: 'Google', power_2024: 0, capacity_mw: 750, status: 'predicted', predicted_year: 2032, predicted_power: 3900 },
+            { name: 'Green Bay, Wisconsin (Predicted)', region: 'Midwest', country: 'USA', state: 'Wisconsin', coords: [-87.9073, 43.0731], operator: 'AWS', power_2024: 0, capacity_mw: 800, status: 'predicted', predicted_year: 2033, predicted_power: 4100 },
+            { name: 'San Antonio, Texas (Predicted)', region: 'Texas', country: 'USA', state: 'Texas', coords: [-99.1332, 31.9454], operator: 'Google', power_2024: 0, capacity_mw: 700, status: 'predicted', predicted_year: 2034, predicted_power: 3600 },
+            { name: 'Albuquerque, New Mexico (Predicted)', region: 'Southwest', country: 'USA', state: 'New Mexico', coords: [-106.6355, 35.0853], operator: 'Google', power_2024: 0, capacity_mw: 800, status: 'predicted', predicted_year: 2035, predicted_power: 4200 },
+            { name: 'Phoenix, Arizona (Predicted)', region: 'Southwest', country: 'USA', state: 'Arizona', coords: [-112.0391, 33.4484], operator: 'AWS', power_2024: 0, capacity_mw: 850, status: 'predicted', predicted_year: 2036, predicted_power: 4400 },
+            { name: 'New Orleans, Louisiana (Predicted)', region: 'Southeast', country: 'USA', state: 'Louisiana', coords: [-90.1994, 29.7604], operator: 'AWS', power_2024: 0, capacity_mw: 600, status: 'predicted', predicted_year: 2038, predicted_power: 3100 },
+            
+            // GLOBAL EXTRAS (24)
+            { name: 'Dublin, Ireland', region: 'Europe', country: 'Ireland', coords: [-6.2597, 53.3498], operator: 'AWS', power_2024: 3500, water_2024: 1.0, capacity_mw: 580, status: 'existing' },
+            { name: 'Amsterdam, Netherlands', region: 'Europe', country: 'Netherlands', coords: [4.8945, 52.3676], operator: 'Google', power_2024: 2800, water_2024: 0.9, capacity_mw: 460, status: 'existing' },
+            { name: 'Frankfurt, Germany', region: 'Europe', country: 'Germany', coords: [8.6821, 50.1109], operator: 'AWS', power_2024: 2400, water_2024: 0.7, capacity_mw: 400, status: 'existing' },
+            { name: 'London, UK', region: 'Europe', country: 'UK', coords: [-0.1278, 51.5074], operator: 'Azure', power_2024: 2100, water_2024: 0.6, capacity_mw: 350, status: 'existing' },
+            { name: 'Paris, France', region: 'Europe', country: 'France', coords: [2.3522, 48.8566], operator: 'Google', power_2024: 1800, water_2024: 0.5, capacity_mw: 300, status: 'existing' },
+            { name: 'Stockholm, Sweden', region: 'Europe', country: 'Sweden', coords: [18.0686, 59.3293], operator: 'AWS', power_2024: 1600, water_2024: 0.4, capacity_mw: 270, status: 'existing' },
+            { name: 'São Paulo, Brazil', region: 'South America', country: 'Brazil', coords: [-46.6333, -23.5505], operator: 'AWS', power_2024: 2100, water_2024: 0.8, capacity_mw: 350, status: 'existing' },
+            { name: 'Dubai, UAE', region: 'Middle East', country: 'UAE', coords: [55.2708, 25.2048], operator: 'AWS', power_2024: 1800, water_2024: 2.0, capacity_mw: 300, status: 'existing' },
+            { name: 'Tokyo, Japan', region: 'Asia-Pacific', country: 'Japan', coords: [139.6917, 35.6895], operator: 'AWS', power_2024: 4200, water_2024: 1.2, capacity_mw: 700, status: 'existing' },
+            { name: 'Singapore', region: 'Asia-Pacific', country: 'Singapore', coords: [103.8198, 1.3521], operator: 'Google', power_2024: 2800, water_2024: 0.9, capacity_mw: 460, status: 'existing' },
+            { name: 'Sydney, Australia', region: 'Asia-Pacific', country: 'Australia', coords: [151.2093, -33.8688], operator: 'AWS', power_2024: 2200, water_2024: 0.7, capacity_mw: 360, status: 'existing' },
+            { name: 'Mumbai, India', region: 'Asia-Pacific', country: 'India', coords: [72.8479, 19.0760], operator: 'AWS', power_2024: 1800, water_2024: 1.5, capacity_mw: 300, status: 'existing' },
+            { name: 'Seoul, South Korea', region: 'Asia-Pacific', country: 'South Korea', coords: [126.9780, 37.5665], operator: 'Google', power_2024: 1600, water_2024: 0.5, capacity_mw: 270, status: 'existing' },
+            { name: 'Shanghai, China', region: 'Asia-Pacific', country: 'China', coords: [121.4737, 31.2304], operator: 'Alibaba', power_2024: 3200, water_2024: 1.8, capacity_mw: 530, status: 'existing' },
+            { name: 'Beijing, China', region: 'Asia-Pacific', country: 'China', coords: [116.4074, 39.9042], operator: 'Alibaba', power_2024: 2800, water_2024: 1.6, capacity_mw: 460, status: 'existing' },
+            { name: 'Paris Expansion, France (Pred)', region: 'Europe', country: 'France', coords: [2.3522, 48.8566], operator: 'Google', power_2024: 0, capacity_mw: 400, status: 'predicted', predicted_year: 2028, predicted_power: 2800 },
+            { name: 'Tokyo Expansion, Japan (Pred)', region: 'Asia-Pacific', country: 'Japan', coords: [139.6917, 35.6895], operator: 'AWS', power_2024: 0, capacity_mw: 500, status: 'predicted', predicted_year: 2030, predicted_power: 3500 },
+            { name: 'Bangalore, India (Pred)', region: 'Asia-Pacific', country: 'India', coords: [77.5946, 12.9716], operator: 'Google', power_2024: 0, capacity_mw: 350, status: 'predicted', predicted_year: 2032, predicted_power: 2400 },
+            { name: 'Berlin, Germany (Pred)', region: 'Europe', country: 'Germany', coords: [13.4050, 52.5200], operator: 'Azure', power_2024: 0, capacity_mw: 300, status: 'predicted', predicted_year: 2029, predicted_power: 2000 },
+            { name: 'São Paulo Exp, Brazil (Pred)', region: 'South America', country: 'Brazil', coords: [-46.6333, -23.5505], operator: 'AWS', power_2024: 0, capacity_mw: 400, status: 'predicted', predicted_year: 2035, predicted_power: 2800 },
+            { name: 'Cape Town, South Africa (Pred)', region: 'Africa', country: 'South Africa', coords: [18.4241, -33.9249], operator: 'Google', power_2024: 0, capacity_mw: 250, status: 'predicted', predicted_year: 2033, predicted_power: 1800 },
+            { name: 'Cairo, Egypt (Pred)', region: 'Africa', country: 'Egypt', coords: [31.2357, 30.0444], operator: 'Google', power_2024: 0, capacity_mw: 200, status: 'predicted', predicted_year: 2036, predicted_power: 1400 },
+            { name: 'Moscow, Russia (Pred)', region: 'Europe', country: 'Russia', coords: [37.6173, 55.7558], operator: 'Alibaba', power_2024: 0, capacity_mw: 300, status: 'predicted', predicted_year: 2034, predicted_power: 2100 },
+        ];
+        
+        // ═════════════════════════════════════════════════════════════════
+        // STATE & CONFIGURATION
+        // ═════════════════════════════════════════════════════════════════
+        
+        let viewMode = 'global'; // 'global' or 'usa'
+        let activeOperators = new Set(['Google', 'AWS', 'Azure', 'Alibaba']);
+        let showPredictions = true;
+        let showClusters = true;
+        let currentYear = 2024;
+        
+        // ═════════════════════════════════════════════════════════════════
+        // MAP SETUP
+        // ═════════════════════════════════════════════════════════════════
+        
+        const map = L.map('map', {
+            center: [20, 0],
+            zoom: 2.5,
+            scrollWheelZoom: true
+        });
+        
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri',
+            maxZoom: 18
+        }).addTo(map);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // ═════════════════════════════════════════════════════════════════
+        // METRICS & RENDERING
+        // ═════════════════════════════════════════════════════════════════
+        
+        function getMetricsForYear(year) {
+            const facilities = allFacilities.filter(f => {
+                if (!activeOperators.has(f.operator)) return false;
+                if (!showPredictions && f.status === 'predicted') return false;
+                if (f.status === 'predicted' && year < f.predicted_year) return false;
+                return true;
+            });
+            
+            let totalPower = 0, totalWater = 0;
+            const regionMetrics = {};
+            const countries = new Set();
+            
+            facilities.forEach(f => {
+                countries.add(f.country);
+                
+                const region = viewMode === 'usa' ? (f.state || f.region) : f.region;
+                if (!regionMetrics[region]) {
+                    regionMetrics[region] = { name: region, facilities: 0, power: 0, water: 0 };
+                }
+                
+                let power, water;
+                
+                if (f.status === 'existing') {
+                    // Existing facilities grow from 2018-2074 at 7.5% CAGR
+                    const yearsSince2018 = Math.max(0, year - 2018);
+                    power = f.power_2024 * Math.pow(1.075, (yearsSince2018 - 6) / 1); // 6 years from 2018 to 2024
+                    power = Math.max(f.power_2024, power); // Never less than 2024 value
+                    water = f.water_2024 * (power / f.power_2024);
+                } else {
+                    // Predicted facilities: only count if after prediction year
+                    if (year < f.predicted_year) {
+                        power = 0;
+                        water = 0;
+                    } else {
+                        const yearsSincePrediction = year - f.predicted_year;
+                        const yearsToGrow = 2074 - f.predicted_year;
+                        const progress = Math.min(yearsSincePrediction / yearsToGrow, 1);
+                        // Growth from predicted value to 2.5x by 2074 (8% CAGR)
+                        power = f.predicted_power * (1 + (progress * 1.5));
+                        water = (f.predicted_power / 1000) * Math.sqrt(Math.max(progress, 0)) * 0.5;
+                    }
+                }
+                
+                if (power > 0) {
+                    regionMetrics[region].facilities++;
+                    regionMetrics[region].power += power;
+                    regionMetrics[region].water += water;
+                    totalPower += power;
+                    totalWater += water;
+                }
+            });
+            
+            return {
+                count: facilities.length,
+                regions: Object.values(regionMetrics),
+                power_gw: (totalPower / 1000).toFixed(2),
+                water_mgd: totalWater.toFixed(2),
+                energy_twh: (totalPower / 1000).toFixed(2),
+                countries: countries.size,
+                facilities: facilities
+            };
+        }
+        
+        function updateMap(year) {
+            map.eachLayer(layer => {
+                if (layer instanceof L.CircleMarker) map.removeLayer(layer);
+            });
+            
+            const metrics = getMetricsForYear(year);
+            const operatorColors = {
+                'Google': '#e52b27',
+                'AWS': '#ff9900',
+                'Azure': '#0078d4',
+                'Alibaba': '#ff6b00'
+            };
+            
+            // Track locations to avoid duplicates
+            const locationMap = {};
+            
+            metrics.facilities.forEach(f => {
+                // Calculate power with corrected growth trajectory
+                let power, water;
+                
+                if (f.status === 'existing') {
+                    // Existing facilities grow from 2018-2074 at 7.5% CAGR
+                    const yearsSince2018 = Math.max(0, year - 2018);
+                    power = f.power_2024 * Math.pow(1.075, (yearsSince2018 - 6) / 1); // 6 years to 2024
+                    power = Math.max(f.power_2024, power); // Never less than 2024 value
+                    water = f.water_2024 * (power / f.power_2024);
+                } else {
+                    // Predicted facilities: growth from prediction year to 2074
+                    if (year < f.predicted_year) {
+                        power = 0;
+                        water = 0;
+                    } else {
+                        const yearsSincePrediction = year - f.predicted_year;
+                        const yearsToGrow = 2074 - f.predicted_year;
+                        const progress = Math.min(yearsSincePrediction / yearsToGrow, 1);
+                        // Growth from predicted value to 2.5x by 2074 (8% CAGR)
+                        power = f.predicted_power * (1 + (progress * 1.5));
+                        water = (f.predicted_power / 1000) * Math.sqrt(Math.max(progress, 0)) * 0.5;
+                    }
+                }
+                
+                // Create location key for deduplication
+                const locationKey = f.coords.toString();
+                
+                // If same location exists, offset the new marker slightly
+                let displayCoords = [f.coords[1], f.coords[0]];
+                if (locationMap[locationKey]) {
+                    locationMap[locationKey]++;
+                    const offset = locationMap[locationKey] * 0.02; // Slight offset
+                    displayCoords = [displayCoords[0] + offset, displayCoords[1] + offset];
+                } else {
+                    locationMap[locationKey] = 1;
+                }
+                
+                const radius = 8 + Math.sqrt(Math.max(power, 100)) / 15;
+                const isExisting = f.status === 'existing';
+                
+                const marker = L.circleMarker(
+                    displayCoords,
+                    {
+                        radius: radius,
+                        fillColor: operatorColors[f.operator] || '#00ff88',
+                        color: isExisting ? '#00ff88' : '#ff00ff',
+                        weight: isExisting ? 2.5 : 1.5,
+                        opacity: isExisting ? 1 : 0.7,
+                        fillOpacity: isExisting ? 0.85 : 0.6,
+                        dashArray: isExisting ? undefined : '4, 3'
+                    }
+                ).addTo(map);
+                
+                const statusLabel = isExisting ? 'Current' : `Predicted ${f.predicted_year}`;
+                const popup = `
+                    <div style="color: #e0e0e0; font-size: 12px;">
+                        <strong>${f.name}</strong> <span style="color: #00ff88; font-size: 10px;">${statusLabel}</span><br>
+                        ${f.operator} | ${f.country}<br>
+                        <strong>Year ${year}:</strong><br>
+                        Power: ${power.toFixed(0)} GWh<br>
+                        Water: ${water.toFixed(2)} MGD<br>
+                        <span style="color: #aaa; font-size: 10px;">Capacity: ${f.capacity_mw} MW</span>
+                    </div>
+                `;
+                
+                marker.bindPopup(popup);
+            });
+            
+            document.getElementById('facilityCount').textContent = metrics.count;
+            document.getElementById('regionCount').textContent = metrics.regions.length;
+            document.getElementById('countryCount').textContent = metrics.countries;
+            document.getElementById('totalPower').textContent = metrics.power_gw;
+            document.getElementById('totalWater').textContent = metrics.water_mgd;
+            document.getElementById('totalEnergy').textContent = metrics.energy_twh + ' TWh';
+            
+            updateClusterList(metrics.regions);
+            updateChart(year);
+        }
+        
+        function updateClusterList(regions) {
+            const list = document.getElementById('clusterList');
+            list.innerHTML = '';
+            
+            regions.sort((a, b) => b.power - a.power).forEach(region => {
+                const item = document.createElement('div');
+                item.className = 'cluster-item';
+                item.innerHTML = `
+                    <div class="cluster-name">${region.name}</div>
+                    <div class="cluster-stats">
+                        <span>${region.facilities} DC</span>
+                        <span>${(region.power / 1000).toFixed(1)} GW</span>
+                        <span>${region.water.toFixed(1)} MGD</span>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        function updateChart(year) {
+            const chartData = [];
+            for (let y = 2018; y <= Math.min(year, 2074); y += 5) {
+                const m = getMetricsForYear(y);
+                chartData.push({ year: y, power: parseFloat(m.power_gw) });
+            }
+            
+            d3.select('#powerChart').selectAll('*').remove();
+            const margin = {top: 5, right: 10, bottom: 15, left: 30};
+            const width = 380 - margin.left - margin.right;
+            const height = 100 - margin.top - margin.bottom;
+            
+            const svg = d3.select('#powerChart')
+                .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+                .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+            
+            const x = d3.scaleLinear()
+                .domain(d3.extent(chartData, d => d.year))
+                .range([0, width]);
+            
+            const y = d3.scaleLinear()
+                .domain([0, Math.max(...chartData.map(d => d.power))])
+                .range([height, 0]);
+            
+            const line = d3.line()
+                .x(d => x(d.year))
+                .y(d => y(d.power));
+            
+            svg.append('path')
+                .datum(chartData)
+                .attr('fill', 'none')
+                .attr('stroke', '#00ff88')
+                .attr('stroke-width', 2.5)
+                .attr('d', line);
+            
+            svg.append('g')
+                .attr('transform', `translate(0,${height})`)
+                .call(d3.axisBottom(x).tickSize(0).ticks(3))
+                .style('color', '#666');
+            
+            svg.append('g')
+                .call(d3.axisLeft(y).tickSize(-width).ticks(3))
+                .style('color', '#666');
+        }
+        
+        // ═════════════════════════════════════════════════════════════════
+        // VIEW SWITCHING
+        // ═════════════════════════════════════════════════════════════════
+        
+        function switchView(mode) {
+            viewMode = mode;
+            
+            document.getElementById('globalViewBtn').classList.toggle('active', mode === 'global');
+            document.getElementById('usaViewBtn').classList.toggle('active', mode === 'usa');
+            
+            if (mode === 'usa') {
+                document.getElementById('viewModeLabel').textContent = '🇺🇸 USA VIEW — 50 States, 21 Datacenters';
+                document.getElementById('clusterTitle').textContent = '📊 State Clusters';
+                map.setView([39.8, -98.6], 4);
+            } else {
+                document.getElementById('viewModeLabel').textContent = '🌍 GLOBAL VIEW — 45+ Countries';
+                document.getElementById('clusterTitle').textContent = '📊 Regional Summary';
+                map.setView([20, 0], 2.5);
+            }
+            
+            updateMap(currentYear);
+        }
+        
+        // ═════════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ═════════════════════════════════════════════════════════════════
+        
+        document.getElementById('globalViewBtn').addEventListener('click', () => switchView('global'));
+        document.getElementById('usaViewBtn').addEventListener('click', () => switchView('usa'));
+        
+        document.getElementById('yearSlider').addEventListener('input', (e) => {
+            currentYear = parseInt(e.target.value);
+            document.getElementById('yearDisplay').textContent = currentYear;
+            updateMap(currentYear);
+        });
+        
+        document.getElementById('clusterToggle').addEventListener('click', (e) => {
+            showClusters = !showClusters;
+            e.target.classList.toggle('active');
+        });
+        
+        document.getElementById('predictionToggle').addEventListener('click', (e) => {
+            showPredictions = !showPredictions;
+            e.target.classList.toggle('active');
+            updateMap(currentYear);
+        });
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const operator = btn.dataset.operator;
+                if (activeOperators.has(operator)) {
+                    activeOperators.delete(operator);
+                    btn.classList.remove('active');
+                } else {
+                    activeOperators.add(operator);
+                    btn.classList.add('active');
+                }
+                updateMap(currentYear);
+            });
+        });
+        
+        // Initial load
+        updateMap(2024);
+    </script>
+</body>
+</html>

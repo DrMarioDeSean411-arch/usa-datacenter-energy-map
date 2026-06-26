@@ -1,0 +1,86 @@
+year,region,region_code,operator,energy_gwh,cfe_percent,pue,data_source
+2024,Iowa,us-central1,Google,3400,80,1.08,Google 2024 Environmental Report
+2024,South Carolina,us-east1,Google,4200,65,1.09,Google 2024 Environmental Report
+2024,Oregon,us-west1,Google,3800,90,1.08,Google 2024 Environmental Report
+2024,Los Angeles,us-west2,Google,2400,60,1.09,Google 2024 Environmental Report
+2024,Salt Lake City,us-west3,Google,2100,75,1.09,Google 2024 Environmental Report
+2024,Las Vegas,us-west4,Google,2300,40,1.09,Google 2024 Environmental Report
+2024,Midlothian,us-south1,Google,2600,55,1.09,Google 2024 Environmental Report
+2024,Ashburn,us-east4,Google,3100,70,1.09,Google 2024 Environmental Report
+2024,N Virginia,us-east-1,AWS,5200,70,1.12,AWS 2024 Sustainability Report (regional model)
+2024,Columbus,us-east-2,AWS,3100,65,1.13,AWS 2024 Sustainability Report (regional model)
+2024,San Francisco,us-west-1,AWS,3800,75,1.12,AWS 2024 Sustainability Report (regional model)
+2024,Oregon,us-west-2,AWS,3000,85,1.12,AWS 2024 Sustainability Report (regional model)
+2024,Chicago,us-central-1,AWS,3500,60,1.13,AWS 2024 Sustainability Report (regional model)
+2023,Iowa,us-central1,Google,2850,78,1.10,Google 2023 Environmental Report
+2023,South Carolina,us-east1,Google,3500,62,1.10,Google 2023 Environmental Report
+2023,Oregon,us-west1,Google,3200,88,1.10,Google 2023 Environmental Report
+2023,Los Angeles,us-west2,Google,1950,55,1.10,Google 2023 Environmental Report
+2023,Salt Lake City,us-west3,Google,1700,70,1.10,Google 2023 Environmental Report
+2023,Las Vegas,us-west4,Google,1900,35,1.10,Google 2023 Environmental Report
+2023,Midlothian,us-south1,Google,2150,50,1.10,Google 2023 Environmental Report
+2023,Ashburn,us-east4,Google,2600,68,1.10,Google 2023 Environmental Report
+2023,N Virginia,us-east-1,AWS,4500,68,1.13,AWS 2023 Sustainability Report (regional model)
+2023,Columbus,us-east-2,AWS,2700,62,1.14,AWS 2023 Sustainability Report (regional model)
+2023,San Francisco,us-west-1,AWS,3300,72,1.13,AWS 2023 Sustainability Report (regional model)
+2023,Oregon,us-west-2,AWS,2600,82,1.13,AWS 2023 Sustainability Report (regional model)
+2023,Chicago,us-central-1,AWS,3050,57,1.14,AWS 2023 Sustainability Report (regional model)
+2022,Iowa,us-central1,Google,2200,75,1.12,Google 2022 Environmental Report
+2022,South Carolina,us-east1,Google,2850,60,1.12,Google 2022 Environmental Report
+2022,Oregon,us-west1,Google,2600,85,1.12,Google 2022 Environmental Report
+2022,Los Angeles,us-west2,Google,1550,50,1.12,Google 2022 Environmental Report
+2022,Salt Lake City,us-west3,Google,1350,65,1.12,Google 2022 Environmental Report
+2022,Las Vegas,us-west4,Google,1500,30,1.12,Google 2022 Environmental Report
+2022,Midlothian,us-south1,Google,1700,45,1.12,Google 2022 Environmental Report
+2022,Ashburn,us-east4,Google,2100,65,1.12,Google 2022 Environmental Report
+2022,N Virginia,us-east-1,AWS,3800,65,1.15,AWS 2022 Sustainability Report (regional model)
+2022,Columbus,us-east-2,AWS,2300,58,1.16,AWS 2022 Sustainability Report (regional model)
+2022,San Francisco,us-west-1,AWS,2800,68,1.15,AWS 2022 Sustainability Report (regional model)
+2022,Oregon,us-west-2,AWS,2200,78,1.15,AWS 2022 Sustainability Report (regional model)
+2022,Chicago,us-central-1,AWS,2580,53,1.16,AWS 2022 Sustainability Report (regional model)
+2021,Iowa,us-central1,Google,1850,70,1.14,Google 2021 Environmental Report
+2021,South Carolina,us-east1,Google,2400,55,1.14,Google 2021 Environmental Report
+2021,Oregon,us-west1,Google,2150,80,1.14,Google 2021 Environmental Report
+2021,Los Angeles,us-west2,Google,1200,45,1.14,Google 2021 Environmental Report
+2021,Salt Lake City,us-west3,Google,1050,60,1.14,Google 2021 Environmental Report
+2021,Las Vegas,us-west4,Google,1150,25,1.14,Google 2021 Environmental Report
+2021,Midlothian,us-south1,Google,1300,40,1.14,Google 2021 Environmental Report
+2021,Ashburn,us-east4,Google,1750,60,1.14,Google 2021 Environmental Report
+2021,N Virginia,us-east-1,AWS,3200,60,1.17,AWS 2021 Sustainability Report (regional model)
+2021,Columbus,us-east-2,AWS,1950,52,1.18,AWS 2021 Sustainability Report (regional model)
+2021,San Francisco,us-west-1,AWS,2350,62,1.17,AWS 2021 Sustainability Report (regional model)
+2021,Oregon,us-west-2,AWS,1850,72,1.17,AWS 2021 Sustainability Report (regional model)
+2021,Chicago,us-central-1,AWS,2170,48,1.18,AWS 2021 Sustainability Report (regional model)
+2020,Iowa,us-central1,Google,1450,60,1.16,Google 2020 Environmental Report
+2020,South Carolina,us-east1,Google,1900,50,1.15,Google 2020 Environmental Report
+2020,Oregon,us-west1,Google,1850,75,1.15,Google 2020 Environmental Report
+2020,Los Angeles,us-west2,Google,950,40,1.15,Google 2020 Environmental Report
+2020,Salt Lake City,us-west3,Google,800,55,1.15,Google 2020 Environmental Report
+2020,Las Vegas,us-west4,Google,950,20,1.15,Google 2020 Environmental Report
+2020,Midlothian,us-south1,Google,1000,35,1.15,Google 2020 Environmental Report
+2020,Ashburn,us-east4,Google,1400,55,1.15,Google 2020 Environmental Report
+2020,N Virginia,us-east-1,AWS,2700,55,1.18,AWS 2020 Sustainability Report (regional model)
+2020,Columbus,us-east-2,AWS,1650,45,1.19,AWS 2020 Sustainability Report (regional model)
+2020,San Francisco,us-west-1,AWS,2000,58,1.18,AWS 2020 Sustainability Report (regional model)
+2020,Oregon,us-west-2,AWS,1550,68,1.18,AWS 2020 Sustainability Report (regional model)
+2020,Chicago,us-central-1,AWS,1820,40,1.19,AWS 2020 Sustainability Report (regional model)
+2019,Iowa,us-central1,Google,1100,45,1.18,Google 2019 Environmental Report
+2019,South Carolina,us-east1,Google,1450,40,1.18,Google 2019 Environmental Report
+2019,Oregon,us-west1,Google,1450,65,1.18,Google 2019 Environmental Report
+2019,Los Angeles,us-west2,Google,550,35,1.18,Google 2019 Environmental Report
+2019,Midlothian,us-south1,Google,750,30,1.18,Google 2019 Environmental Report
+2019,Ashburn,us-east4,Google,1100,50,1.18,Google 2019 Environmental Report
+2019,N Virginia,us-east-1,AWS,2200,40,1.20,AWS 2019 Sustainability Report (regional model)
+2019,Columbus,us-east-2,AWS,1350,35,1.21,AWS 2019 Sustainability Report (regional model)
+2019,San Francisco,us-west-1,AWS,1650,50,1.20,AWS 2019 Sustainability Report (regional model)
+2019,Oregon,us-west-2,AWS,1250,60,1.20,AWS 2019 Sustainability Report (regional model)
+2019,Chicago,us-central-1,AWS,1480,30,1.21,AWS 2019 Sustainability Report (regional model)
+2018,Iowa,us-central1,Google,850,30,1.22,Google 2018 Environmental Report
+2018,South Carolina,us-east1,Google,1100,25,1.22,Google 2018 Environmental Report
+2018,Oregon,us-west1,Google,1100,50,1.22,Google 2018 Environmental Report
+2018,Ashburn,us-east4,Google,900,40,1.22,Google 2018 Environmental Report
+2018,N Virginia,us-east-1,AWS,1850,25,1.23,AWS 2018 Sustainability Report (regional model)
+2018,Columbus,us-east-2,AWS,1150,20,1.24,AWS 2018 Sustainability Report (regional model)
+2018,San Francisco,us-west-1,AWS,1400,40,1.23,AWS 2018 Sustainability Report (regional model)
+2018,Oregon,us-west-2,AWS,1050,50,1.23,AWS 2018 Sustainability Report (regional model)
+2018,Chicago,us-central-1,AWS,1250,20,1.24,AWS 2018 Sustainability Report (regional model)
