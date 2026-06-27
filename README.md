@@ -58,7 +58,6 @@ Interactive visualization of 45+ hyperscaler datacenters worldwide with 50-year 
 - Google 2024 Environmental Report
 - AWS 2024 Sustainability Report
 - Azure global infrastructure data
-- NIST Facial Recognition Technology Evaluation (secondary)
 
 For complete technical details, see **FORECAST_MODEL.md**.
 
